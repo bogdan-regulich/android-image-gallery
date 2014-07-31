@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">android-image-gallery</string>
-    <string name="hello_world">Hello world!</string>
-    <string name="action_settings">Settings</string>
+    <string name="app_name">Галерея</string>
+    <!--Menu actions-->
+    <string name="action_import_from_gallery">импорт из галереи</string>
+    <string name="action_import_from_camera">импорт из камеры</string>
 
 </resources>
