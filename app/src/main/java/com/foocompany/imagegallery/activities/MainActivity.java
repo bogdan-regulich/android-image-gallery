@@ -3,6 +3,7 @@ package com.foocompany.imagegallery.activities;
 import android.app.Activity;
 import android.app.FragmentManager;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.view.Menu;
@@ -10,6 +11,9 @@ import android.view.MenuItem;
 
 import com.foocompany.imagegallery.R;
 import com.foocompany.imagegallery.fragments.OverviewImageGalleryFragment;
+
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 
 /**
  * Created by soyuzcontent on 31.07.2014.
@@ -38,6 +42,37 @@ public class MainActivity extends Activity {
                             new OverviewImageGalleryFragment(),
                             OverviewImageGalleryFragment.TAG)
                     .commit();
+        }
+    }
+
+    //==============Activity result=====================//
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (resultCode == RESULT_OK) {
+            switch (requestCode) {
+                case IMPORT_IMAGE_FROM_GALLERY_REQUEST_CODE: {
+                    Uri imgUri = data.getData();
+                    try {
+                        InputStream imgInputStream = getContentResolver().openInputStream(imgUri);
+
+                        OverviewImageGalleryFragment fragment =
+                                (OverviewImageGalleryFragment) getFragmentManager().findFragmentByTag(
+                                        OverviewImageGalleryFragment.TAG);
+
+                        if (fragment != null) fragment.importImage(imgInputStream);
+
+                    } catch (FileNotFoundException ex) {
+                        ex.printStackTrace();
+                    }
+                    break;
+                }
+                case IMPORT_IMAGE_FROM_CAMERA_REQUEST_CODE: {
+                    break;
+                }
+            }
         }
     }
 
