@@ -23,7 +23,10 @@ public final class DbDao {
         return mDbDao;
     }
 
-    public synchronized void insertImageInfo(Context context, String imgFilePath, double lat, double lng) {
+    /**
+     * @return inserted row id;
+     * */
+    public synchronized long insertImageInfo(Context context, String imgFilePath) {
 
         DbHelper dbHelper = new DbHelper(context);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
@@ -32,10 +35,8 @@ public final class DbDao {
 
             ContentValues cv = new ContentValues();
             cv.put(DbContract.ImageInfoEntry.COLUMN_NAME_IMAGE_FILE_PATH, imgFilePath);
-            cv.put(DbContract.ImageInfoEntry.COLUMN_NAME_LAT,             lat);
-            cv.put(DbContract.ImageInfoEntry.COLUMN_NAME_LNG,             lng);
 
-            db.insert(DbContract.ImageInfoEntry.TABLE_NAME, null, cv);
+            return db.insert(DbContract.ImageInfoEntry.TABLE_NAME, null, cv);
 
         } finally {
             dbHelper.close();
@@ -58,14 +59,7 @@ public final class DbDao {
                 ImageInfo imgInfo = new ImageInfo();
 
                 imgInfo.setDbRowId(cursor.getInt(0));
-                imgInfo.setImgFilePath(cursor.getString(1));
-
-                if (!cursor.isNull(2)) {
-                    imgInfo.setLat(cursor.getDouble(2));
-                }
-                if (!cursor.isNull(3)) {
-                    imgInfo.setLng(cursor.getDouble(3));
-                }
+                imgInfo.setImgName(cursor.getString(1));
 
                 imageInfoList.add(imgInfo);
             }

@@ -7,8 +7,10 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 
 import com.foocompany.imagegallery.R;
+import com.foocompany.imagegallery.pojo.ImageInfo;
 import com.foocompany.imagegallery.views.FileUriLoadImageView;
 
+import java.io.File;
 import java.util.List;
 
 /**
@@ -16,27 +18,30 @@ import java.util.List;
  */
 public class OverviewImagesAdapter extends BaseAdapter {
 
-    private List<String> mImgFileUris;
+    private File mImagesPath;
+
+    private List<ImageInfo> mImagesInfoList;
 
     private LayoutInflater mLayoutInflater;
 
     //=================Constructor=============//
 
-    public OverviewImagesAdapter(Context context, List<String> imgFileUris) {
+    public OverviewImagesAdapter(Context context, File imagesPath, List<ImageInfo> imagesInfoList) {
         mLayoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        mImgFileUris = imgFileUris;
+        mImagesPath = imagesPath;
+        mImagesInfoList = imagesInfoList;
     }
 
     //==================BaseAdapter============//
 
     @Override
     public int getCount() {
-        return mImgFileUris.size();
+        return mImagesInfoList.size();
     }
 
     @Override
     public Object getItem(int position) {
-        return mImgFileUris.get(position);
+        return mImagesInfoList.get(position);
     }
 
     @Override
@@ -58,8 +63,9 @@ public class OverviewImagesAdapter extends BaseAdapter {
             imgView = (FileUriLoadImageView) convertView;
         }
 
-        imgView.loadImgFromFileUri(
-                mImgFileUris.get(position));
+        File imgFile = new File(mImagesPath, mImagesInfoList.get(position).getImgName());
+
+        imgView.loadImgFromFileUri(imgFile);
 
         return imgView;
     }

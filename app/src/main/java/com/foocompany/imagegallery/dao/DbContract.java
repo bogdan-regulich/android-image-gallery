@@ -14,6 +14,13 @@ public final class DbContract {
         public static final String TABLE_NAME = "IMAGES_INFO";
 
         public static final String COLUMN_NAME_IMAGE_FILE_PATH = "IMG_FILE_PATH";
+    }
+
+    public static final class ImageCoordinatesEntry implements BaseColumns {
+
+        public static final String TABLE_NAME = "IMAGES_COORDINATES";
+
+        public static final String COLUMN_NAME_FOREIGN_KEY_ID = "FOREIGN_KEY_ID";
         public static final String COLUMN_NAME_LAT             = "LAT";
         public static final String COLUMN_NAME_LNG             = "LNG";
     }

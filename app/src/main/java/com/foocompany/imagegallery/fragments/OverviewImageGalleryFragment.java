@@ -9,9 +9,12 @@ import android.view.ViewGroup;
 
 import com.foocompany.imagegallery.R;
 import com.foocompany.imagegallery.models.OverviewImageGalleryModel;
+import com.foocompany.imagegallery.pojo.ImageInfo;
 import com.foocompany.imagegallery.views.OverviewImageGalleryView;
 
+import java.io.File;
 import java.io.InputStream;
+import java.util.List;
 
 /**
  * Created by Bogdan on 31-Jul-14.
@@ -36,7 +39,7 @@ public class OverviewImageGalleryFragment
     public void onAttach(Activity activity) {
         super.onAttach(activity);
 
-        mModel = new OverviewImageGalleryModel();
+        mModel = new OverviewImageGalleryModel(activity);
         mModel.setListener(this);
     }
 
@@ -46,6 +49,8 @@ public class OverviewImageGalleryFragment
                 R.layout.overview_image_gallery,
                 container,
                 false);
+
+        mModel.fetchImagesInfoAsync();
 
         return mView;
     }
@@ -63,9 +68,43 @@ public class OverviewImageGalleryFragment
 
     //================OverviewImageGalleryModel.ModelListener============//
 
+    @Override
+    public void onImagesInfoFetched(final File imagesPath, final List<ImageInfo> imageInfoList) {
+        Activity activity = getActivity();
+        if (activity == null)
+            return;
+
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (mView == null)
+                    return;
+
+                mView.setData(imagesPath, imageInfoList);
+            }
+        });
+    }
+
+    @Override
+    public void onImagesCollectionChanged() {
+        Activity activity = getActivity();
+        if (activity == null)
+            return;
+
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (mView == null)
+                    return;
+
+                mView.refreshView();
+            }
+        });
+    }
+
     //================Public methods============//
 
     public void importImage(InputStream imageInputStream) {
-        mModel.importImageAsync(imageInputStream);
+        mModel.importImageFromGalleryAsync(imageInputStream);
     }
 }

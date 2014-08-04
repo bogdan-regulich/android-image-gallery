@@ -1,8 +1,12 @@
 package com.foocompany.imagegallery.models;
 
+import android.content.Context;
 import android.os.Environment;
 
+import com.foocompany.imagegallery.R;
+import com.foocompany.imagegallery.dao.DbDao;
 import com.foocompany.imagegallery.interfaces.IListener;
+import com.foocompany.imagegallery.pojo.ImageInfo;
 import com.foocompany.imagegallery.utils.ExtStorageUtils;
 import com.foocompany.imagegallery.utils.IOUtils;
 
@@ -10,6 +14,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.Future;
 
 /**
@@ -24,14 +30,39 @@ public class OverviewImageGalleryModel
 
     private Future mFutureImportImage;
 
+    private Future mFutureFetchImagesInfo;
+
     private final Object mSyncObjImportImg = new Object();
+
+    private final Object mSyncObjFetchImagesInfo = new Object();
+
+    private final Object mSyncObjImgInfoList = new Object();
+
+    private Context mContext;
+
+    private File mImagesPath;
+
+    private List<ImageInfo> mImageInfoList;
+
+    //=================Constructor==============//
+
+    public OverviewImageGalleryModel(Context context) {
+        mContext = context;
+
+        if (ExtStorageUtils.isExtStorageWritable()) {
+            mImagesPath = ExtStorageUtils.getExtStoragePubDir(
+                    mContext.getString(R.string.images_directory_name),
+                    Environment.DIRECTORY_PICTURES);
+        }
+    }
 
     //=================ModelListener===========//
 
     private ModelListener mListener;
 
     public static interface ModelListener {
-
+        void onImagesInfoFetched(File imagesPath, List<ImageInfo> imageInfoList);
+        void onImagesCollectionChanged();
     }
 
     //=================IListener===============//
@@ -57,7 +88,7 @@ public class OverviewImageGalleryModel
 
     //================Public methods=============//
 
-    public void importImageAsync(final InputStream imageInputStream) {
+    public void importImageFromGalleryAsync(final InputStream imageInputStream) {
         if (mFutureImportImage != null) {
             mFutureImportImage.cancel(true);
         }
@@ -66,10 +97,42 @@ public class OverviewImageGalleryModel
             public void run() {
 
                 synchronized (mSyncObjImportImg) {
-                    if (tryImportImage(imageInputStream)) {
+                    ImageInfo imageInfo = tryImportImageFromGallery(imageInputStream);
+                    if (imageInfo != null) {
+                        synchronized (mSyncObjImgInfoList) {
+                            mImageInfoList.add(imageInfo);
+                        }
+                        synchronized (mSyncObjListener) {
+                            if (mListener != null) {
+                                mListener.onImagesCollectionChanged();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    public void fetchImagesInfoAsync() {
+        if (mFutureFetchImagesInfo != null) {
+            mFutureFetchImagesInfo.cancel(true);
+        }
+        mFutureFetchImagesInfo = mThreadPool.submit(new Runnable() {
+            @Override
+            public void run() {
+
+                synchronized (mSyncObjFetchImagesInfo) {
+
+                    List<ImageInfo> imgInfoList = DbDao.getInstance().getAllImagesInfo(mContext);
+
+                    synchronized (mSyncObjImgInfoList) {
+
+                        mImageInfoList = imgInfoList;
 
                         synchronized (mSyncObjListener) {
-
+                            if (mListener != null) {
+                                mListener.onImagesInfoFetched(mImagesPath, mImageInfoList);
+                            }
                         }
                     }
                 }
@@ -79,22 +142,33 @@ public class OverviewImageGalleryModel
 
     //================Private methods=============//
 
-    private boolean tryImportImage(InputStream imageInputStream) {
+    /**
+     * @return copied image info or null if image copy was not successful;
+     * */
+    private ImageInfo tryImportImageFromGallery(InputStream imageInputStream) {
         if (ExtStorageUtils.isExtStorageWritable()) {
 
-            File path = ExtStorageUtils.getExtStoragePubDir(
-                    "img gallery",
-                    Environment.DIRECTORY_PICTURES);
-
-            File newImgFile = new File(path, "test_img.some");
+            String imgName = UUID.randomUUID().toString();
+            File newImgFile = new File(mImagesPath, imgName);
 
             try {
 
-                return IOUtils.copy(imageInputStream, new FileOutputStream(newImgFile));
+                boolean isImageCopySuccessful =
+                        IOUtils.copy(imageInputStream, new FileOutputStream(newImgFile));
 
+                if (isImageCopySuccessful) {
+                    // Saving copied image info to the database.
+                    long dbRowId = DbDao.getInstance().insertImageInfo(mContext, imgName);
+
+                    ImageInfo imgInfo = new ImageInfo();
+                    imgInfo.setDbRowId(dbRowId);
+                    imgInfo.setImgName(imgName);
+
+                    return imgInfo;
+                }
             } catch (FileNotFoundException ex) { ex.printStackTrace(); }
         }
 
-        return false;
+        return null;
     }
 }

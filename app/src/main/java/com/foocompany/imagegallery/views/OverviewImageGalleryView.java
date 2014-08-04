@@ -6,7 +6,9 @@ import android.widget.BaseAdapter;
 import android.widget.GridView;
 
 import com.foocompany.imagegallery.adapters.OverviewImagesAdapter;
+import com.foocompany.imagegallery.pojo.ImageInfo;
 
+import java.io.File;
 import java.util.List;
 
 /**
@@ -37,9 +39,9 @@ public class OverviewImageGalleryView extends GridView {
 
     //============Public methods===========//
 
-    public void setData(List<String> imgFileUris)
+    public void setData(File imagesPath, List<ImageInfo> imagesInfoList)
     {
-        setAdapter(new OverviewImagesAdapter(getContext(), imgFileUris));
+        setAdapter(new OverviewImagesAdapter(getContext(), imagesPath, imagesInfoList));
     }
 
     public void refreshView() {

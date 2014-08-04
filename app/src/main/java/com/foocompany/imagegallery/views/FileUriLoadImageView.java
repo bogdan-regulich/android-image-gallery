@@ -29,12 +29,12 @@ public class FileUriLoadImageView extends ImageView {
 
     //==============Public methods==========//
 
-    public void loadImgFromFileUri(String imgFileUri) {
+    public void loadImgFromFileUri(File imgFile) {
 
         Picasso.with(getContext()).cancelRequest(this);
 
         Picasso.with(getContext())
-                .load(new File(imgFileUri))
+                .load(imgFile)
                 .into(this);
     }
 }
