@@ -1,6 +1,7 @@
 package com.foocompany.imagegallery.models;
 
 import android.content.Context;
+import android.location.Location;
 import android.os.Environment;
 
 import com.foocompany.imagegallery.R;
@@ -9,6 +10,7 @@ import com.foocompany.imagegallery.interfaces.IListener;
 import com.foocompany.imagegallery.pojo.ImageInfo;
 import com.foocompany.imagegallery.utils.ExtStorageUtils;
 import com.foocompany.imagegallery.utils.IOUtils;
+import com.foocompany.imagegallery.utils.LocationManagerUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -106,6 +108,45 @@ public class OverviewImageGalleryModel
                             if (mListener != null) {
                                 mListener.onImagesCollectionChanged();
                             }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    public void importImageFromCameraAsync(final String cameraImgFileName) {
+        if (mFutureImportImage != null) {
+            mFutureImportImage.cancel(true);
+        }
+        mFutureImportImage = mThreadPool.submit(new Runnable() {
+            @Override
+            public void run() {
+
+                synchronized (mSyncObjImportImg) {
+
+                    DbDao dbDao = DbDao.getInstance();
+
+                    long dbImgRowId = dbDao.insertImageInfo(mContext, cameraImgFileName);
+
+                    // Fetching photo capture location.
+                    Location location =
+                            LocationManagerUtils.getLastKnownLocationFromBestAvailableProvider(mContext);
+
+                    if (location != null) {
+                        dbDao.insertPhotoCaptureLocation(mContext, dbImgRowId, location);
+                    }
+
+                    ImageInfo imageInfo = new ImageInfo();
+                    imageInfo.setDbRowId(dbImgRowId);
+                    imageInfo.setImgName(cameraImgFileName);
+
+                    synchronized (mSyncObjImgInfoList) {
+                        mImageInfoList.add(imageInfo);
+                    }
+                    synchronized (mSyncObjListener) {
+                        if (mListener != null) {
+                            mListener.onImagesCollectionChanged();
                         }
                     }
                 }

@@ -5,15 +5,19 @@ import android.app.FragmentManager;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import com.foocompany.imagegallery.R;
 import com.foocompany.imagegallery.fragments.OverviewImageGalleryFragment;
+import com.foocompany.imagegallery.utils.ExtStorageUtils;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.UUID;
 
 /**
  * Created by soyuzcontent on 31.07.2014.
@@ -23,6 +27,8 @@ public class MainActivity extends Activity {
     private static final int IMPORT_IMAGE_FROM_GALLERY_REQUEST_CODE = 1;
 
     private static final int IMPORT_IMAGE_FROM_CAMERA_REQUEST_CODE = 2;
+
+    private String mCameraImgName;
 
     //==============Activity lifecycle==================//
 
@@ -51,26 +57,41 @@ public class MainActivity extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (resultCode == RESULT_OK) {
-            switch (requestCode) {
-                case IMPORT_IMAGE_FROM_GALLERY_REQUEST_CODE: {
-                    Uri imgUri = data.getData();
-                    try {
-                        InputStream imgInputStream = getContentResolver().openInputStream(imgUri);
+        if (IMPORT_IMAGE_FROM_GALLERY_REQUEST_CODE == requestCode && resultCode == RESULT_OK) {
+            Uri imgUri = data.getData();
+            try {
+                InputStream imgInputStream = getContentResolver().openInputStream(imgUri);
 
-                        OverviewImageGalleryFragment fragment =
-                                (OverviewImageGalleryFragment) getFragmentManager().findFragmentByTag(
-                                        OverviewImageGalleryFragment.TAG);
+                OverviewImageGalleryFragment fragment =
+                        (OverviewImageGalleryFragment) getFragmentManager().findFragmentByTag(
+                                OverviewImageGalleryFragment.TAG);
 
-                        if (fragment != null) fragment.importImage(imgInputStream);
+                if (fragment != null) fragment.importImageFromGallery(imgInputStream);
 
-                    } catch (FileNotFoundException ex) {
-                        ex.printStackTrace();
-                    }
-                    break;
+            } catch (FileNotFoundException ex) {
+                ex.printStackTrace();
+            }
+
+        } else if (IMPORT_IMAGE_FROM_CAMERA_REQUEST_CODE == requestCode) {
+
+            if (resultCode == RESULT_OK) {
+
+                OverviewImageGalleryFragment fragment =
+                        (OverviewImageGalleryFragment) getFragmentManager().findFragmentByTag(
+                                OverviewImageGalleryFragment.TAG);
+
+                if (fragment != null) {
+                    fragment.importImageFromCamera(mCameraImgName);
                 }
-                case IMPORT_IMAGE_FROM_CAMERA_REQUEST_CODE: {
-                    break;
+
+            } else {
+                // Removing unused camera file.
+                if (ExtStorageUtils.isExtStorageWritable()) {
+                    File imagesPath = ExtStorageUtils.getExtStoragePubDir(
+                            getString(R.string.images_directory_name),
+                            Environment.DIRECTORY_PICTURES);
+
+                    new File(imagesPath, mCameraImgName).delete();
                 }
             }
         }
@@ -98,10 +119,20 @@ public class MainActivity extends Activity {
             }
             case R.id.action_image_from_camera: {
 
-                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                if (ExtStorageUtils.isExtStorageWritable()) {
+                    File imagesPath = ExtStorageUtils.getExtStoragePubDir(
+                            getString(R.string.images_directory_name),
+                            Environment.DIRECTORY_PICTURES);
 
-                if (intent.resolveActivity(getPackageManager()) != null) {
-                    startActivityForResult(intent, IMPORT_IMAGE_FROM_CAMERA_REQUEST_CODE);
+                    mCameraImgName = UUID.randomUUID().toString();
+                    File cameraImgFile = new File(imagesPath, mCameraImgName);
+
+                    Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(cameraImgFile));
+
+                    if (intent.resolveActivity(getPackageManager()) != null) {
+                        startActivityForResult(intent, IMPORT_IMAGE_FROM_CAMERA_REQUEST_CODE);
+                    }
                 }
                 break;
             }

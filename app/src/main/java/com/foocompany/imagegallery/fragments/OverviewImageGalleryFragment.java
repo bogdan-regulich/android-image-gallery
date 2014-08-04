@@ -104,7 +104,11 @@ public class OverviewImageGalleryFragment
 
     //================Public methods============//
 
-    public void importImage(InputStream imageInputStream) {
+    public void importImageFromGallery(InputStream imageInputStream) {
         mModel.importImageFromGalleryAsync(imageInputStream);
+    }
+
+    public void importImageFromCamera(String cameraImgFileName) {
+        mModel.importImageFromCameraAsync(cameraImgFileName);
     }
 }

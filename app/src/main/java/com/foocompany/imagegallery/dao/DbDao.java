@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.location.Location;
 
 import com.foocompany.imagegallery.pojo.ImageInfo;
 
@@ -87,6 +88,24 @@ public final class DbDao {
                     .append(dbRowId);
 
             db.delete(DbContract.ImageInfoEntry.TABLE_NAME, sb.toString(), null);
+
+        } finally {
+            dbHelper.close();
+        }
+    }
+
+    public synchronized void insertPhotoCaptureLocation(Context context, long fkImgRowId, Location location) {
+        DbHelper dbHelper = new DbHelper(context);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+        try {
+
+            ContentValues cv = new ContentValues();
+            cv.put(DbContract.ImageCoordinatesEntry.COLUMN_NAME_FOREIGN_KEY_ID, fkImgRowId);
+            cv.put(DbContract.ImageCoordinatesEntry.COLUMN_NAME_LAT,            location.getLatitude());
+            cv.put(DbContract.ImageCoordinatesEntry.COLUMN_NAME_LNG,            location.getLongitude());
+
+            db.insert(DbContract.ImageCoordinatesEntry.TABLE_NAME, null, cv);
 
         } finally {
             dbHelper.close();

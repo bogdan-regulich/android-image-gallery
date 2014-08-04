@@ -34,10 +34,14 @@ public class FileUriLoadImageView extends ImageView {
 
         Picasso.with(getContext()).cancelRequest(this);
 
-        RequestCreator requestCreator = Picasso.with(getContext()).load(imgFile);
+        RequestCreator requestCreator = Picasso.with(getContext())
+                .load(imgFile)
+                .placeholder(null);
+
         if (isNeedToCrop) {
             requestCreator.fit().centerCrop();
         }
+
         requestCreator.into(this);
     }
 }
