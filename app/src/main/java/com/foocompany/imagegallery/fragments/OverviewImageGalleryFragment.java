@@ -1,11 +1,14 @@
 package com.foocompany.imagegallery.fragments;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Fragment;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 
 import com.foocompany.imagegallery.R;
 import com.foocompany.imagegallery.models.OverviewImageGalleryModel;
@@ -23,7 +26,9 @@ public class OverviewImageGalleryFragment
         extends
             Fragment
         implements
-            OverviewImageGalleryModel.ModelListener {
+            OverviewImageGalleryModel.ModelListener,
+            OverviewImageGalleryView.OnItemClickListener,
+            OverviewImageGalleryView.OnItemLongClickListener {
 
     public static final String TAG = "com.foocompany.imagegallery.fragments.OverviewImageGalleryFragment.Tag";
 
@@ -33,6 +38,14 @@ public class OverviewImageGalleryFragment
 
     OverviewImageGalleryModel mModel;
 
+    //================Fragment listener=============//
+
+    private FragmentListener mListener;
+
+    public static interface FragmentListener {
+        void onUserImageSelected(ImageInfo imageInfo);
+    }
+
     //================Fragment lifecycle============//
 
     @Override
@@ -41,6 +54,12 @@ public class OverviewImageGalleryFragment
 
         mModel = new OverviewImageGalleryModel(activity);
         mModel.setListener(this);
+
+        try {
+            mListener = (FragmentListener) activity;
+        } catch (ClassCastException ex) {
+            ex.printStackTrace();
+        }
     }
 
     @Override
@@ -49,6 +68,9 @@ public class OverviewImageGalleryFragment
                 R.layout.overview_image_gallery,
                 container,
                 false);
+
+        mView.setOnItemClickListener(this);
+        mView.setOnItemLongClickListener(this);
 
         mModel.fetchImagesInfoAsync();
 
@@ -64,6 +86,8 @@ public class OverviewImageGalleryFragment
         mModel.cancel();
         mModel.removeListener();
         mModel = null;
+
+        mListener = null;
     }
 
     //================OverviewImageGalleryModel.ModelListener============//
@@ -100,6 +124,32 @@ public class OverviewImageGalleryFragment
                 mView.refreshView();
             }
         });
+    }
+
+    //=============OverviewImageGalleryView listeners======================//
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        if (mListener != null) {
+            ImageInfo imageInfo = (ImageInfo) parent.getAdapter().getItem(position);
+            mListener.onUserImageSelected(imageInfo);
+        }
+    }
+
+    @Override
+    public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
+
+        AlertDialog.Builder myAlertDialog = new AlertDialog.Builder(getActivity());
+        myAlertDialog.setTitle(getActivity().getString(R.string.dialog_title_remove));
+        myAlertDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface arg0, int arg1) {
+                mModel.removeImageAsync(position);
+            }});
+        myAlertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface arg0, int arg1) { }});
+        myAlertDialog.show();
+
+        return true;
     }
 
     //================Public methods============//

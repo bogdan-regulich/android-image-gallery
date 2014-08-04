@@ -30,13 +30,6 @@ public class OverviewImageGalleryView extends GridView {
         super(context, attrs, defStyle);
     }
 
-    //============View lifecycle===========//
-
-    @Override
-    protected void onFinishInflate() {
-        super.onFinishInflate();
-    }
-
     //============Public methods===========//
 
     public void setData(File imagesPath, List<ImageInfo> imagesInfoList)

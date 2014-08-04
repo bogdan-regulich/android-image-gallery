@@ -12,6 +12,7 @@ import android.view.MenuItem;
 
 import com.foocompany.imagegallery.R;
 import com.foocompany.imagegallery.fragments.OverviewImageGalleryFragment;
+import com.foocompany.imagegallery.pojo.ImageInfo;
 import com.foocompany.imagegallery.utils.ExtStorageUtils;
 
 import java.io.File;
@@ -22,7 +23,11 @@ import java.util.UUID;
 /**
  * Created by soyuzcontent on 31.07.2014.
  */
-public class MainActivity extends Activity {
+public class MainActivity
+        extends
+            Activity
+        implements
+            OverviewImageGalleryFragment.FragmentListener {
 
     private static final int IMPORT_IMAGE_FROM_GALLERY_REQUEST_CODE = 1;
 
@@ -139,5 +144,12 @@ public class MainActivity extends Activity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    //=================OverviewImageGalleryFragment.FragmentListener==============//
+
+    @Override
+    public void onUserImageSelected(ImageInfo imageInfo) {
+        
     }
 }

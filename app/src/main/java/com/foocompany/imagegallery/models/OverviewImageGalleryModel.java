@@ -34,6 +34,8 @@ public class OverviewImageGalleryModel
 
     private Future mFutureFetchImagesInfo;
 
+    private Future mFutureRemoveImageInfo;
+
     private final Object mSyncObjImportImg = new Object();
 
     private final Object mSyncObjFetchImagesInfo = new Object();
@@ -175,6 +177,30 @@ public class OverviewImageGalleryModel
                                 mListener.onImagesInfoFetched(mImagesPath, mImageInfoList);
                             }
                         }
+                    }
+                }
+            }
+        });
+    }
+
+    public void removeImageAsync(final int position) {
+        if (mFutureRemoveImageInfo != null) {
+            mFutureRemoveImageInfo.cancel(true);
+        }
+        mFutureRemoveImageInfo = mThreadPool.submit(new Runnable() {
+            @Override
+            public void run() {
+
+                synchronized (mSyncObjImgInfoList) {
+                    ImageInfo imageInfo = mImageInfoList.get(position);
+
+                    DbDao.getInstance().deleteImageInfoEntry(mContext, imageInfo.getDbRowId());
+                    new File(mImagesPath, imageInfo.getImgName()).delete();
+                    mImageInfoList.remove(position);
+                }
+                synchronized (mSyncObjListener) {
+                    if (mListener != null) {
+                        mListener.onImagesCollectionChanged();
                     }
                 }
             }

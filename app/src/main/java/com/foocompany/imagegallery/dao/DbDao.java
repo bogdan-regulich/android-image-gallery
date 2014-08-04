@@ -75,7 +75,7 @@ public final class DbDao {
         return imageInfoList;
     }
 
-    public synchronized void deleteImageInfoEntry(Context context, int dbRowId) {
+    public synchronized void deleteImageInfoEntry(Context context, long dbRowId) {
         DbHelper dbHelper = new DbHelper(context);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 

@@ -6,5 +6,7 @@
     <string name="action_import_from_gallery">импорт из галереи</string>
     <string name="action_import_from_camera">импорт из камеры</string>
 
+    <string name="dialog_title_remove">Удалить</string>
+
     <string name="images_directory_name">foocompany_image_gallery</string>
 </resources>
