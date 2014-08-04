@@ -24,6 +24,8 @@ public final class DbDao {
         return mDbDao;
     }
 
+    //=========================Image info===========================//
+
     /**
      * @return inserted row id;
      * */
@@ -75,7 +77,7 @@ public final class DbDao {
         return imageInfoList;
     }
 
-    public synchronized void deleteImageInfoEntry(Context context, long dbRowId) {
+    public synchronized void deleteImageInfoEntry(Context context, long dbImgRowId) {
         DbHelper dbHelper = new DbHelper(context);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
@@ -85,7 +87,7 @@ public final class DbDao {
 
             sb.append(DbContract.ImageInfoEntry._ID)
                     .append("=")
-                    .append(dbRowId);
+                    .append(dbImgRowId);
 
             db.delete(DbContract.ImageInfoEntry.TABLE_NAME, sb.toString(), null);
 
@@ -93,6 +95,8 @@ public final class DbDao {
             dbHelper.close();
         }
     }
+
+    //=========================Photo capture location===============//
 
     public synchronized void insertPhotoCaptureLocation(Context context, long fkImgRowId, Location location) {
         DbHelper dbHelper = new DbHelper(context);
@@ -110,5 +114,110 @@ public final class DbDao {
         } finally {
             dbHelper.close();
         }
+    }
+
+    public synchronized Location getPhotoCaptureLocation(Context context, long fkImgRowId) {
+        DbHelper dbHelper = new DbHelper(context);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        Cursor cursor = null;
+
+        try {
+
+            String[] tableColumns = new String[] {
+                    DbContract.ImageCoordinatesEntry.COLUMN_NAME_LAT,
+                    DbContract.ImageCoordinatesEntry.COLUMN_NAME_LNG
+            };
+            String whereClause = DbContract.ImageCoordinatesEntry.COLUMN_NAME_FOREIGN_KEY_ID + " = ?";
+            String[] whereArgs = new String[] {
+                    Long.toString(fkImgRowId),
+            };
+
+            cursor = db.query(DbContract.ImageCoordinatesEntry.TABLE_NAME,
+                    tableColumns,
+                    whereClause,
+                    whereArgs,
+                    null,
+                    null,
+                    null);
+
+            if (cursor.getCount() == 1) {
+                cursor.moveToNext();
+
+                double lat = cursor.getDouble(0);
+                double lng = cursor.getDouble(1);
+
+                Location location = new Location("");
+                location.setLatitude(lat);
+                location.setLongitude(lng);
+
+                return location;
+            }
+
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+            dbHelper.close();
+        }
+
+        return null;
+    }
+
+    //=========================Comments=============================//
+
+    public synchronized void insertComment(Context context, long fkImgRowId, String text) {
+        DbHelper dbHelper = new DbHelper(context);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+        try {
+
+            ContentValues cv = new ContentValues();
+            cv.put(DbContract.CommentEntry.COLUMN_NAME_FOREIGN_KEY_ID, fkImgRowId);
+            cv.put(DbContract.CommentEntry.COLUMN_NAME_TEXT, text);
+
+            db.insert(DbContract.CommentEntry.TABLE_NAME, null, cv);
+
+        } finally {
+            dbHelper.close();
+        }
+    }
+
+    public synchronized List<String> getComments(Context context, long fkImgRowId) {
+
+        DbHelper dbHelper = new DbHelper(context);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        Cursor cursor = null;
+
+        List<String> comments = new ArrayList<String>();
+
+        try {
+            String[] tableColumns = new String[] {
+                    DbContract.CommentEntry.COLUMN_NAME_TEXT,
+            };
+            String whereClause = DbContract.CommentEntry.COLUMN_NAME_FOREIGN_KEY_ID + " = ?";
+            String[] whereArgs = new String[] {
+                    Long.toString(fkImgRowId),
+            };
+
+            cursor = db.query(DbContract.CommentEntry.TABLE_NAME,
+                    tableColumns,
+                    whereClause,
+                    whereArgs,
+                    null,
+                    null,
+                    null);
+
+            while (cursor.moveToNext()) {
+                comments.add(cursor.getString(0));
+            }
+
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+            dbHelper.close();
+        }
+
+        return comments;
     }
 }

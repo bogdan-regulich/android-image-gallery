@@ -82,8 +82,13 @@ public class OverviewImageGalleryFragment
         super.onDestroyView();
 
         mView = null;
-
         mModel.cancel();
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+
         mModel.removeListener();
         mModel = null;
 

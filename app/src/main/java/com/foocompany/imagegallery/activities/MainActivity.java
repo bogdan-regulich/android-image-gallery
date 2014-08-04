@@ -11,6 +11,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.foocompany.imagegallery.R;
+import com.foocompany.imagegallery.fragments.DetailedImageFragment;
 import com.foocompany.imagegallery.fragments.OverviewImageGalleryFragment;
 import com.foocompany.imagegallery.pojo.ImageInfo;
 import com.foocompany.imagegallery.utils.ExtStorageUtils;
@@ -150,6 +151,11 @@ public class MainActivity
 
     @Override
     public void onUserImageSelected(ImageInfo imageInfo) {
-        
+        getFragmentManager().beginTransaction()
+                .replace(R.id.layout_fragment_container,
+                        DetailedImageFragment.createFragment(imageInfo),
+                        DetailedImageFragment.TAG)
+                .addToBackStack(null)
+                .commit();
     }
 }

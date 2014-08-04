@@ -88,6 +88,12 @@ public class OverviewImageGalleryModel
         if (mFutureImportImage != null) {
             mFutureImportImage.cancel(true);
         }
+        if (mFutureFetchImagesInfo != null) {
+            mFutureFetchImagesInfo.cancel(true);
+        }
+        if (mFutureRemoveImageInfo != null) {
+            mFutureRemoveImageInfo.cancel(true);
+        }
     }
 
     //================Public methods=============//
