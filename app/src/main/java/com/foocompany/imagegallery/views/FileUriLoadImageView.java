@@ -5,6 +5,7 @@ import android.util.AttributeSet;
 import android.widget.ImageView;
 
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.RequestCreator;
 
 import java.io.File;
 
@@ -29,12 +30,14 @@ public class FileUriLoadImageView extends ImageView {
 
     //==============Public methods==========//
 
-    public void loadImgFromFileUri(File imgFile) {
+    public void loadImageFromFile(File imgFile, boolean isNeedToCrop) {
 
         Picasso.with(getContext()).cancelRequest(this);
 
-        Picasso.with(getContext())
-                .load(imgFile)
-                .into(this);
+        RequestCreator requestCreator = Picasso.with(getContext()).load(imgFile);
+        if (isNeedToCrop) {
+            requestCreator.fit().centerCrop();
+        }
+        requestCreator.into(this);
     }
 }

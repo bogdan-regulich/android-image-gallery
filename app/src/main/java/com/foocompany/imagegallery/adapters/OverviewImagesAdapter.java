@@ -1,14 +1,13 @@
 package com.foocompany.imagegallery.adapters;
 
 import android.content.Context;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 
-import com.foocompany.imagegallery.R;
 import com.foocompany.imagegallery.pojo.ImageInfo;
 import com.foocompany.imagegallery.views.FileUriLoadImageView;
+import com.foocompany.imagegallery.views.SquaredImageView;
 
 import java.io.File;
 import java.util.List;
@@ -22,12 +21,12 @@ public class OverviewImagesAdapter extends BaseAdapter {
 
     private List<ImageInfo> mImagesInfoList;
 
-    private LayoutInflater mLayoutInflater;
+    private Context mContext;
 
     //=================Constructor=============//
 
     public OverviewImagesAdapter(Context context, File imagesPath, List<ImageInfo> imagesInfoList) {
-        mLayoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        mContext = context;
         mImagesPath = imagesPath;
         mImagesInfoList = imagesInfoList;
     }
@@ -52,20 +51,17 @@ public class OverviewImagesAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
 
-        FileUriLoadImageView imgView = null;
+        FileUriLoadImageView imgView;
 
         if (convertView == null) {
-            imgView = (FileUriLoadImageView) mLayoutInflater.inflate(
-                    R.layout.file_uri_load_image_view,
-                    parent,
-                    false);
+            imgView = new SquaredImageView(mContext);
         } else {
-            imgView = (FileUriLoadImageView) convertView;
+            imgView = (SquaredImageView) convertView;
         }
 
         File imgFile = new File(mImagesPath, mImagesInfoList.get(position).getImgName());
 
-        imgView.loadImgFromFileUri(imgFile);
+        imgView.loadImageFromFile(imgFile, true);
 
         return imgView;
     }
