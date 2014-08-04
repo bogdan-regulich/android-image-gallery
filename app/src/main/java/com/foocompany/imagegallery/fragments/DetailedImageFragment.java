@@ -23,7 +23,8 @@ public class DetailedImageFragment
         extends
             Fragment
         implements
-            DetailedImageModel.ModelListener {
+            DetailedImageModel.ModelListener,
+            DetailedImageView.ViewListener {
 
     public static final String TAG = "com.foocompany.imagegallery.fragments.DetailedImageFragment.Tag";
 
@@ -55,6 +56,8 @@ public class DetailedImageFragment
                 container,
                 false);
 
+        mView.setListener(this);
+
         Bundle args = getArguments();
         if (args != null) {
 
@@ -72,7 +75,9 @@ public class DetailedImageFragment
     public void onDestroyView() {
         super.onDestroyView();
 
+        mView.removeListener();
         mView = null;
+
         mModel.cancel();
     }
 
@@ -104,6 +109,30 @@ public class DetailedImageFragment
                 mView.setData(imageFile, comments, location);
             }
         });
+    }
+
+    @Override
+    public void onCommentsUpdated() {
+        Activity activity = getActivity();
+        if (activity == null)
+            return;
+
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (mView == null)
+                    return;
+
+                mView.refreshView();
+            }
+        });
+    }
+
+    //===========DetailedImageView.ViewListener==================//
+
+    @Override
+    public void onNewCommentEntered(String comment) {
+        mModel.addNewCommentAsync(comment);
     }
 
     //==================Fragment creator=========================//

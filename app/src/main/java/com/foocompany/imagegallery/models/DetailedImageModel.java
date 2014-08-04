@@ -26,13 +26,17 @@ public class DetailedImageModel
 
     private Future mFutureFetchDetailedImgInfo;
 
-    private final Object mSyncObjFetchDetailedImgInfo = new Object();
+    private Future mFutureUpdateComments;
+
+    private final Object mSyncObjCommon = new Object();
 
     private Context mContext;
 
     private File mImagesPath;
 
     private File mImageFile;
+
+    private long mDbImgRowId;
 
     private Location mPhotoCaptureLocation;
 
@@ -56,6 +60,7 @@ public class DetailedImageModel
 
     public static interface ModelListener {
         void onDetailedImageInfoFetched(File imageFile, List<String> comments, Location location);
+        void onCommentsUpdated();
     }
 
     //=================IListener===============//
@@ -77,6 +82,9 @@ public class DetailedImageModel
         if (mFutureFetchDetailedImgInfo != null) {
             mFutureFetchDetailedImgInfo.cancel(true);
         }
+        if (mFutureUpdateComments != null) {
+            mFutureUpdateComments.cancel(true);
+        }
     }
 
     //================Public methods=============//
@@ -89,17 +97,19 @@ public class DetailedImageModel
             @Override
             public void run() {
 
-                synchronized (mSyncObjFetchDetailedImgInfo) {
+                synchronized (mSyncObjCommon) {
 
                     mImageFile = new File(mImagesPath, imageInfo.getImgName());
+
+                    mDbImgRowId = imageInfo.getDbRowId();
 
                     DbDao dbDao = DbDao.getInstance();
 
                     mPhotoCaptureLocation = dbDao.getPhotoCaptureLocation(
                             mContext,
-                            imageInfo.getDbRowId());
+                            mDbImgRowId);
 
-                    mComments = dbDao.getComments(mContext, imageInfo.getDbRowId());
+                    mComments = dbDao.getComments(mContext, mDbImgRowId);
 
                     synchronized (mSyncObjListener) {
                         if (mListener != null) {
@@ -107,6 +117,29 @@ public class DetailedImageModel
                                     mImageFile,
                                     mComments,
                                     mPhotoCaptureLocation);
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    public void addNewCommentAsync(final String comment) {
+        if (mFutureUpdateComments != null) {
+            mFutureUpdateComments.cancel(true);
+        }
+        mFutureUpdateComments = mThreadPool.submit(new Runnable() {
+            @Override
+            public void run() {
+
+                synchronized (mSyncObjCommon) {
+
+                    DbDao.getInstance().insertComment(mContext, mDbImgRowId, comment);
+                    mComments.add(comment);
+
+                    synchronized (mSyncObjListener) {
+                        if (mListener != null) {
+                            mListener.onCommentsUpdated();
                         }
                     }
                 }

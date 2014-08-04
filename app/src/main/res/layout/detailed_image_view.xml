@@ -16,5 +16,7 @@
     <EditText
         android:id="@+id/etext_comment"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:hint="Enter comment here"
+        android:singleLine="true"/>
 </com.foocompany.imagegallery.views.DetailedImageView>

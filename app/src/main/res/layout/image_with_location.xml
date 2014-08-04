@@ -3,18 +3,20 @@
 <com.foocompany.imagegallery.views.ImageWithLocationView
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content">
 
-    <com.foocompany.imagegallery.views.FileUriLoadImageView
+    <com.foocompany.imagegallery.views.SquaredImageView
         android:id="@+id/img_image"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="wrap_content"/>
 
     <TextView
         android:id="@+id/text_location"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="62dp"
         android:layout_gravity="bottom"
-        android:textSize="20sp"
-        android:background="#Afffff"/>
+        android:textSize="22sp"
+        android:textColor="@android:color/white"
+        android:background="#7b000000"
+        android:gravity="center"/>
 </com.foocompany.imagegallery.views.ImageWithLocationView>
