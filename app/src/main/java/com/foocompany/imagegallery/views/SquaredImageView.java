@@ -26,6 +26,25 @@ public class SquaredImageView extends FileUriLoadImageView {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(widthMeasureSpec, widthMeasureSpec);
+
+        int size = 0;
+        // finding min size of square;
+        if (widthMeasureSpec == 0) {
+            size = heightMeasureSpec;
+
+        } else if (heightMeasureSpec == 0) {
+            size = widthMeasureSpec;
+
+        } else if (widthMeasureSpec == heightMeasureSpec) {
+            size = widthMeasureSpec;
+
+        } else if (widthMeasureSpec < heightMeasureSpec) {
+            size = widthMeasureSpec;
+
+        } else {
+            size = heightMeasureSpec;
+        }
+
+        super.onMeasure(size, size);
     }
 }

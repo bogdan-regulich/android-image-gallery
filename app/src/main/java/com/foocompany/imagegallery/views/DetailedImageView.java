@@ -78,13 +78,19 @@ public class DetailedImageView
         LayoutInflater layoutInflater =
                 (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-        mViewImageWithLocation = (ImageWithLocationView) layoutInflater.inflate(
-                R.layout.image_with_location,
-                null,
-                false);
-
         mListViewComments = (ListView) findViewById(R.id.list_comments);
-        mListViewComments.addHeaderView(mViewImageWithLocation);
+
+        mViewImageWithLocation = (ImageWithLocationView) findViewById(R.id.layout_img_with_loc);
+
+        if (mViewImageWithLocation == null) {
+
+            mViewImageWithLocation = (ImageWithLocationView) layoutInflater.inflate(
+                    R.layout.image_with_location,
+                    mListViewComments,
+                    false);
+
+            mListViewComments.addHeaderView(mViewImageWithLocation);
+        }
 
         mETextComment = (EditText) findViewById(R.id.etext_comment);
         mETextComment.setOnKeyListener(this);
